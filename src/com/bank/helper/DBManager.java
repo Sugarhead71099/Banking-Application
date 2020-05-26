@@ -1,5 +1,6 @@
 package com.bank.helper;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -35,6 +36,7 @@ public class DBManager
 		this.username = null;
 		this.password = null;
 		this.url = null;
+		this.connection = null;
 	}
 
 	public DBManager(String host, String databaseName, String username, String password)
@@ -141,6 +143,16 @@ public class DBManager
 		return connection;
 	}
 
+	private static Boolean checkConnection(Connection connection) throws DatabaseException.NoConnectionEstablished
+	{
+		if ( connection == null )
+		{
+			throw new DatabaseException.NoConnectionEstablished("There is no database connection - please call the \"connect\" method before making any transactions on the database.");
+		}
+
+		return true;
+	}
+
 	private static String getFieldNames(String[] fieldsArr)
 	{
 		String fieldStr = Stream.of(fieldsArr).collect(Collectors.joining(","));
@@ -187,6 +199,9 @@ public class DBManager
 			} else if ( value instanceof LocalDate )
 			{
 				pstmt.setDate( paramIndex, java.sql.Date.valueOf((LocalDate) value) );
+			}  else if ( value instanceof BigDecimal )
+			{
+				pstmt.setBigDecimal( paramIndex, (BigDecimal) value );
 			} else
 			{
 				pstmt.setObject(paramIndex, value);
@@ -196,8 +211,11 @@ public class DBManager
 		return pstmt;
 	}
 	
-	public int insert(String table, String[] fieldsArr, Object[] valuesArr) throws DatabaseException.InvalidParameters
+	public int insert(String table, String[] fieldsArr, Object[] valuesArr)
+		throws DatabaseException.NoConnectionEstablished, DatabaseException.InvalidParameters
 	{
+		checkConnection(connection);
+
 		if ( fieldsArr.length != valuesArr.length )
 		{
 			throw new DatabaseException.InvalidParameters("Invalid parameters given - \"fieldsArr\" and \"valuesArr\" must be the same length.");
@@ -225,8 +243,11 @@ public class DBManager
 		return 0;
 	}
 
-	public int insert(String table, String[] fieldsArr, Object[] valuesArr, String whereClause) throws DatabaseException.InvalidParameters
+	public int insert(String table, String[] fieldsArr, Object[] valuesArr, String whereClause)
+		throws DatabaseException.NoConnectionEstablished, DatabaseException.InvalidParameters
 	{
+		checkConnection(connection);
+
 		if ( fieldsArr.length != valuesArr.length )
 		{
 			throw new DatabaseException.InvalidParameters("Invalid parameters given - \"fieldsArr\" and \"valuesArr\" must be the same length.");
@@ -256,8 +277,11 @@ public class DBManager
 
 
 
-	public int insert(String table, String[] fieldsArr, Object[] valuesArr, String whereClause, Object[] whereClauseValues) throws DatabaseException.InvalidParameters
+	public int insert(String table, String[] fieldsArr, Object[] valuesArr, String whereClause, Object[] whereClauseValues)
+		throws DatabaseException.NoConnectionEstablished, DatabaseException.InvalidParameters
 	{
+		checkConnection(connection);
+
 		if ( fieldsArr.length != valuesArr.length )
 		{
 			throw new DatabaseException.InvalidParameters("Invalid parameters given - \"fieldsArr\" and \"valuesArr\" must be the same length.");
@@ -285,8 +309,11 @@ public class DBManager
 		return 0;
 	}
 
-	public int update(String table, String[] fieldsArr, Object[] valuesArr) throws DatabaseException.InvalidParameters
+	public int update(String table, String[] fieldsArr, Object[] valuesArr)
+		throws DatabaseException.NoConnectionEstablished, DatabaseException.InvalidParameters
 	{
+		checkConnection(connection);
+
 		if ( fieldsArr.length != valuesArr.length )
 		{
 			throw new DatabaseException.InvalidParameters("Invalid parameters given - \"fieldsArr\" and \"valuesArr\" must be the same length.");
@@ -313,8 +340,11 @@ public class DBManager
 		return 0;
 	}
 
-	public int update(String table, String[] fieldsArr, Object[] valuesArr, String whereClause) throws DatabaseException.InvalidParameters
+	public int update(String table, String[] fieldsArr, Object[] valuesArr, String whereClause)
+		throws DatabaseException.NoConnectionEstablished, DatabaseException.InvalidParameters
 	{
+		checkConnection(connection);
+
 		if ( fieldsArr.length != valuesArr.length )
 		{
 			throw new DatabaseException.InvalidParameters("Invalid parameters given - \"fieldsArr\" and \"valuesArr\" must be the same length.");
@@ -341,8 +371,11 @@ public class DBManager
 		return 0;
 	}
 
-	public int update(String table, String[] fieldsArr, Object[] valuesArr, String whereClause, Object[] whereClauseValues) throws DatabaseException.InvalidParameters
+	public int update(String table, String[] fieldsArr, Object[] valuesArr, String whereClause, Object[] whereClauseValues)
+		throws DatabaseException.NoConnectionEstablished, DatabaseException.InvalidParameters
 	{
+		checkConnection(connection);
+
 		if ( fieldsArr.length != valuesArr.length )
 		{
 			throw new DatabaseException.InvalidParameters("Invalid parameters given - \"fieldsArr\" and \"valuesArr\" must be the same length.");
@@ -369,8 +402,10 @@ public class DBManager
 		return 0;
 	}
 
-	public ResultSet select(String table, String[] fieldsArr)
+	public ResultSet select(String table, String[] fieldsArr) throws DatabaseException.NoConnectionEstablished
 	{
+		checkConnection(connection);
+
 		try
 		{
 			String fields = fieldsArr.length > 0 ? getFieldNames(fieldsArr) : "*";
@@ -390,8 +425,10 @@ public class DBManager
 		return null;
 	}
 
-	public ResultSet select(String table, String[] fieldsArr, String whereClause)
+	public ResultSet select(String table, String[] fieldsArr, String whereClause) throws DatabaseException.NoConnectionEstablished
 	{
+		checkConnection(connection);
+
 		try
 		{
 			String fields = fieldsArr.length > 0 ? getFieldNames(fieldsArr) : "*";
@@ -411,8 +448,10 @@ public class DBManager
 		return null;
 	}
 
-	public ResultSet select(String table, String[] fieldsArr, String whereClause, Object[] whereClauseValuesArr)
+	public ResultSet select(String table, String[] fieldsArr, String whereClause, Object[] whereClauseValuesArr) throws DatabaseException.NoConnectionEstablished
 	{
+		checkConnection(connection);
+
 		try
 		{
 			String fields = fieldsArr.length > 0 ? getFieldNames(fieldsArr) : "*";
@@ -434,8 +473,10 @@ public class DBManager
 		return null;
 	}
 
-	public int delete(String table, String whereClause)
+	public int delete(String table, String whereClause) throws DatabaseException.NoConnectionEstablished
 	{
+		checkConnection(connection);
+
 		try
 		{
 			PreparedStatement pstmt = connection.prepareStatement("DELETE FROM " + table + " WHERE " + whereClause + ";");
@@ -456,8 +497,10 @@ public class DBManager
 		return 0;
 	}
 
-	public int delete(String table, String whereClause, Object[] whereClauseValuesArr)
+	public int delete(String table, String whereClause, Object[] whereClauseValuesArr) throws DatabaseException.NoConnectionEstablished
 	{
+		checkConnection(connection);
+
 		try
 		{
 			PreparedStatement pstmt = connection.prepareStatement("DELETE FROM " + table + " WHERE " + whereClause + ";");

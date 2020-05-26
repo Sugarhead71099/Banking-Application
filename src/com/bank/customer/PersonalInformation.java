@@ -37,6 +37,10 @@ public class PersonalInformation implements Serializable
 		this.lastName = lastName;
 		this.dateOfBirth = dateOfBirth;
 		this.email = email;
+		this.age = (
+			this.dateOfBirth != null && this.dateOfBirth instanceof LocalDate ?
+				DataFormatter.getDuration(this.dateOfBirth, ChronoUnit.YEARS) : 0
+		);
 	}
 	
 
@@ -50,13 +54,6 @@ public class PersonalInformation implements Serializable
 		this.mobilePhone = mobilePhone;
 		this.homePhone = homePhone;
 		this.ssn = ssn;
-	}
-
-	{
-		this.age = (
-			dateOfBirth != null && dateOfBirth instanceof LocalDate ?
-				DataFormatter.getDuration(dateOfBirth, ChronoUnit.YEARS) : 0
-		);
 	}
 
 	public String getFirstName()

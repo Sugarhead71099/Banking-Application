@@ -3,6 +3,7 @@ package com.bank.account;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public abstract class Account implements Serializable
 		this.id = UUID.randomUUID().toString();
 		this.balance = new BigDecimal("0");
 		this.creationDate = LocalDate.now();
+		this.statements = new ArrayList<Statement>();
 	}
 
 	Account(BigDecimal balance)
@@ -38,6 +40,7 @@ public abstract class Account implements Serializable
 		this.id = UUID.randomUUID().toString();
 		this.balance = balance;
 		this.creationDate = ( creationDate != null ? creationDate : LocalDate.now() );
+		this.statements = new ArrayList<Statement>();
 	}
 
 	Account(BigDecimal balance, LocalDate creationDate, List<Statement> statements)

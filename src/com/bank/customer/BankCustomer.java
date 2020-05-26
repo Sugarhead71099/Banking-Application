@@ -51,6 +51,7 @@ public class BankCustomer extends Customer implements Comparable<Customer>
 
 				if ( PersonalInformation.getAge() < accountAgeRequirement )
 				{
+					System.out.println("Personal Information Age " + PersonalInformation.getAge());
 					throw new BankAccountException.AgeRestriction("Age must be " + accountAgeRequirement + " or higher to add this type of bank account.");
 				}
 			}
@@ -88,6 +89,30 @@ public class BankCustomer extends Customer implements Comparable<Customer>
 	public int compareTo(Customer customer)
 	{
 		return this.PersonalInformation.getAge() - customer.PersonalInformation.getAge();
+	}
+
+	@Override
+	public boolean equals(Object obj)
+	{
+		if ( this == obj )
+		{
+			return true;
+		} else if ( obj == null )
+		{
+			return false;
+		} else if ( !(obj instanceof BankCustomer) )
+		{
+			return false;
+		}
+
+		BankCustomer other = (BankCustomer) obj;
+
+		if ( super.getId().equals(other.getId()) )
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	@Override

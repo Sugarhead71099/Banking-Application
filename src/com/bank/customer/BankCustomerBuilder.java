@@ -32,6 +32,9 @@ public class BankCustomerBuilder
 	private BigDecimal supplementalIncomeAmount;
 	private int age;
 
+	@SuppressWarnings("unused")
+	private BankCustomerBuilder() {}
+
 	public BankCustomerBuilder(String firstName, String lastName, LocalDate dateOfBirth, String email)	
 	{
 		this.firstName = firstName;
@@ -45,9 +48,7 @@ public class BankCustomerBuilder
 		this.ssn = "";
 		this.grossMonthlyIncome = new BigDecimal("0");
 		this.supplementalIncomeAmount = new BigDecimal("0");
-	}
 
-	{
 		this.age = (
 			dateOfBirth != null && dateOfBirth instanceof LocalDate ?
 				DataFormatter.getDuration(dateOfBirth, ChronoUnit.YEARS) : 0
@@ -72,6 +73,9 @@ public class BankCustomerBuilder
 		{
 			int accountAgeRequirement = account.getType().AGE_REQUIREMENT;
 
+			System.out.println("Age is " + this.age);
+			System.out.println("Account Age Requirement " + accountAgeRequirement);
+			
 			if ( this.age < accountAgeRequirement )
 			{
 				throw new BankAccountException.AgeRestriction("Age must be " + accountAgeRequirement + " or higher to add this type of bank account.");

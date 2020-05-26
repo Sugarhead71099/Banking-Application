@@ -2,6 +2,7 @@ package com.bank;
 
 import com.bank.customer.BankCustomer;
 import com.bank.customer.BankCustomerBuilder;
+import com.bank.exception.BankAccountException;
 import com.bank.helper.DBManager;
 import com.bank.account.BankAccount;
 
@@ -22,7 +23,7 @@ import java.io.ObjectOutputStream;*/
 public class Bank extends Thread
 {
 
-	protected static DBManager DB;
+	public static DBManager DB;
 	private final List<BankCustomer> customers;
 
     public static Comparator<BankCustomer> customerComparator = new Comparator<BankCustomer>()
@@ -72,6 +73,7 @@ public class Bank extends Thread
 	public void run()
 	{
 		super.run();
+
 		DB = new DBManager("localhost:1521", "orcl", "system", "system");
 	}
 
@@ -112,11 +114,23 @@ public class Bank extends Thread
 		 * e.printStackTrace(); } catch ( Exception e ) { e.printStackTrace(); }
 		 */
 
+		Bank bank = null;
+
 		try
 		{
+			try
+			{
+				bank = new Bank(customerSeeder);
+			} catch ( BankAccountException.AgeRestriction e )
+			{
+				e.printStackTrace();
+			} catch ( Exception e )
+			{
+				e.printStackTrace();
+			}
 
-			Bank bank = new Bank(customerSeeder);
-			bank.start();
+			bank.run();
+
 			System.out.println(bank);
 			System.out.println("\n");
 
@@ -126,7 +140,7 @@ public class Bank extends Thread
 
 			customer1BankAccounts.get(0).generateStatement();
 
-			System.out.println("Customer 1 Bank Account 1 Statements:" + customer1BankAccounts.get(0).getStatements().get(0));
+			System.out.println("Customer 1 Bank Account 1 Statements:" + customer1BankAccounts.get(0).getStatements());
 			System.out.println("\n");
 
 			Collections.sort(bank.customers, Bank.customerComparator);

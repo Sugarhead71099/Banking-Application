@@ -20,4 +20,21 @@ public class DatabaseException
 
 	}
 
+	public static class NoConnectionEstablished extends RuntimeException
+	{
+
+		private static final long serialVersionUID;
+
+		static
+		{
+			serialVersionUID = 3337268898943274849L;
+		}
+
+		public NoConnectionEstablished(String message)
+		{
+			super(message);
+		}
+
+	}
+
 }

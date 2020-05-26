@@ -1,9 +1,12 @@
 package com.bank.account;
 
 import java.math.BigDecimal;
+
+import com.bank.Bank;
 import com.bank.account.Account;
 
 import com.bank.exception.BankAccountException;
+import com.bank.exception.DatabaseException;
 import com.bank.helper.DataFormatter;
 
 public class BankAccount extends Account
@@ -46,6 +49,8 @@ public class BankAccount extends Account
 	private BigDecimal withdrawals;
 	private BigDecimal deposits;
 
+	private final String ASSOC_TABLE;
+
 	static
 	{
 		serialVersionUID = 7852783786237721221L;
@@ -72,12 +77,17 @@ public class BankAccount extends Account
 
 		this.type = ( type != null ? type : AccountType.CHECKING );
 
-		if ( balance.compareTo(this.type.REQUIRED_BALANCE) < 0 ) {
+		if ( balance.compareTo(this.type.REQUIRED_BALANCE) < 0 )
+		{
 			throw new BankAccountException.RequiredBalance("Balance must be " + type.REQUIRED_BALANCE + " or greater to open this type of account");
 		}
 
 		this.withdrawals = new BigDecimal("0");
 		this.deposits = new BigDecimal("0");
+	}
+
+	{
+		this.ASSOC_TABLE = "accounts";
 	}
 
 	public AccountType getType()
@@ -88,6 +98,23 @@ public class BankAccount extends Account
 	public void setType(AccountType type)
 	{
 		this.type = type;
+
+		try
+		{
+			Bank.DB.update(
+				ASSOC_TABLE,
+				new String[] { "type" },
+				new Object[] { type },
+				"ID = ?",
+				new Object[] { super.getId() }
+			);
+		} catch ( DatabaseException.InvalidParameters e )
+		{
+			e.printStackTrace();
+		} catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public BigDecimal getWithdrawals()
@@ -98,6 +125,23 @@ public class BankAccount extends Account
 	public void setWithdrawals(BigDecimal withdrawals)
 	{
 		this.withdrawals = withdrawals;
+
+		try
+		{
+			Bank.DB.update(
+				ASSOC_TABLE,
+				new String[] { "withdrawals" },
+				new Object[] { withdrawals },
+				"ID = ?",
+				new Object[] { super.getId() }
+			);
+		} catch ( DatabaseException.InvalidParameters e )
+		{
+			e.printStackTrace();
+		} catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public BigDecimal getDeposits()
@@ -108,6 +152,23 @@ public class BankAccount extends Account
 	public void setDeposits(BigDecimal deposits)
 	{
 		this.deposits = deposits;
+
+		try
+		{
+			Bank.DB.update(
+					ASSOC_TABLE,
+				new String[] { "deposits" },
+				new Object[] { deposits },
+				"ID = ?",
+				new Object[] { super.getId() }
+			);
+		} catch ( DatabaseException.InvalidParameters e )
+		{
+			e.printStackTrace();
+		} catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public static BankAccount createAccount(BigDecimal balance, AccountType type)
@@ -159,7 +220,30 @@ public class BankAccount extends Account
 		deposits = new BigDecimal("0");
 		withdrawals = new BigDecimal("0");
 
-		return new BankStatement(super.getBalance(), totalDeposits, totalWithdrawals);
+		BankStatement newStatement = new BankStatement(super.getBalance(), totalDeposits, totalWithdrawals);
+
+		super.addStatement(newStatement);
+
+		Thread.yield();
+
+		try
+		{
+			Bank.DB.update(
+				ASSOC_TABLE,
+				new String[] { "deposits", "withdrawals" },
+				new Object[] { getDeposits(), getWithdrawals() },
+				"ID = ?",
+				new Object[] { super.getId() }
+			);
+		} catch ( DatabaseException.InvalidParameters e )
+		{
+			e.printStackTrace();
+		} catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
+
+		return newStatement;
 	}
 
 	@Override
@@ -182,6 +266,23 @@ public class BankAccount extends Account
 
 		super.setBalance(newBalance);
 
+		try
+		{
+			Bank.DB.update(
+					ASSOC_TABLE,
+				new String[] { "balance", "withdrawals" },
+				new Object[] { super.getBalance(), getWithdrawals() },
+				"ID = ?",
+				new Object[] { super.getId() }
+			);
+		} catch ( DatabaseException.InvalidParameters e )
+		{
+			e.printStackTrace();
+		} catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
+
 		return super.getBalance();
 	}
 
@@ -198,6 +299,23 @@ public class BankAccount extends Account
 		BigDecimal newBalance = super.getBalance().add(amount);
 
 		super.setBalance(newBalance);
+
+		try
+		{
+			Bank.DB.update(
+					ASSOC_TABLE,
+				new String[] { "balance", "deposits" },
+				new Object[] { super.getBalance(), getDeposits() },
+				"ID = ?",
+				new Object[] { super.getId() }
+			);
+		} catch ( DatabaseException.InvalidParameters e )
+		{
+			e.printStackTrace();
+		} catch ( Exception e )
+		{
+			e.printStackTrace();
+		}
 
 		return super.getBalance();
 	}
